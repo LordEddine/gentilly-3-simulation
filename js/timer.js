@@ -69,6 +69,16 @@ class CountdownTimer {
             this.display.style.color = '#ffcc00';
             this.display.style.textShadow = '0 0 15px rgba(255,204,0,0.3)';
         }
+
+        // Red alert border when <= 1h20 remaining
+        const mainScreen = document.getElementById('screen-main');
+        if (mainScreen) {
+            if (this.remaining > 0 && this.remaining <= 4800) {
+                mainScreen.classList.add('alert-border');
+            } else {
+                mainScreen.classList.remove('alert-border');
+            }
+        }
     }
 
     getFormatted() {
