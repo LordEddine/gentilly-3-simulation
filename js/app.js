@@ -216,23 +216,43 @@ function performLogin() {
     const hint = document.getElementById('login-hint');
     const name = input.value.trim().toUpperCase();
 
-    state.agentName = name;
-    state.loginTime = Date.now();
+    // Vérifier si une session sauvegardée correspond à ce nom
+    const savedData = loadProgress();
+    const isReturning = savedData && savedData.agentName === name;
 
-    // Save to localStorage
+    if (isReturning) {
+        // Restaurer l'état sauvegardé
+        state.agentName = savedData.agentName;
+        state.unlockedLevels = savedData.unlockedLevels || ['briefing'];
+        state.currentLevel = savedData.currentLevel || 'briefing';
+        state.loginTime = savedData.loginTime || Date.now();
+    } else {
+        // Nouvelle partie — effacer l'ancienne sauvegarde
+        localStorage.removeItem(SAVE_KEY);
+        state.agentName = name;
+        state.loginTime = Date.now();
+        state.unlockedLevels = ['briefing'];
+        state.currentLevel = 'briefing';
+    }
+
+    // Sauvegarder immédiatement
     saveProgress();
 
-    // Fake authentication animation
+    // Animation d'authentification
     hint.textContent = 'Vérification des accréditations...';
     hint.style.color = '#ffcc00';
 
     setTimeout(() => {
-        hint.textContent = `Bienvenue, Agent ${name}. Accès autorisé.`;
+        if (isReturning) {
+            hint.textContent = `Bienvenue, Agent ${name}. Session restaurée.`;
+        } else {
+            hint.textContent = `Bienvenue, Agent ${name}. Accès autorisé.`;
+        }
         hint.style.color = '#00ff41';
 
         setTimeout(() => {
             switchScreen('screen-login', 'screen-main');
-            initializeMain();
+            initializeMain(isReturning ? savedData : null);
         }, 1000);
     }, 1500);
 }
@@ -795,23 +815,7 @@ function wait(ms) {
 // INITIALIZATION
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
-    const savedData = loadProgress();
-
-    if (savedData && savedData.agentName) {
-        // Joueur de retour — restaurer l'état
-        state.agentName = savedData.agentName;
-        state.unlockedLevels = savedData.unlockedLevels || ['briefing'];
-        state.currentLevel = savedData.currentLevel || 'briefing';
-        state.loginTime = savedData.loginTime || Date.now();
-
-        // Aller directement à l'interface principale (pas de boot/login)
-        document.getElementById('screen-boot').classList.remove('active');
-        document.getElementById('screen-main').classList.add('active');
-
-        initializeMain(savedData);
-    } else {
-        // Nouveau joueur — séquence normale
-        setupLogin();
-        runBootSequence();
-    }
+    // Toujours afficher boot + login
+    setupLogin();
+    runBootSequence();
 });
