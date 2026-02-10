@@ -269,9 +269,16 @@ function initializeMain(savedData = null) {
         el.textContent = state.agentName;
     });
 
-    // Start timer
+    // Start timer — use restart target (3h) if available, otherwise fixed date
     const timerEl = document.getElementById('main-timer');
-    state.timer = new CountdownTimer(timerEl, CONFIG.timer);
+    const restartTarget = localStorage.getItem('reactor7_restart');
+    if (restartTarget) {
+        const targetMs = parseInt(restartTarget, 10);
+        const targetDate = new Date(targetMs).toISOString();
+        state.timer = new CountdownTimer(timerEl, { targetDate: targetDate });
+    } else {
+        state.timer = new CountdownTimer(timerEl, CONFIG.timer);
+    }
     state.timer.start();
 
     // Briefing : typewriter ou affichage instantané

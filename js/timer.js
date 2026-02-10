@@ -79,12 +79,86 @@ class CountdownTimer {
                 mainScreen.classList.remove('alert-border');
             }
         }
+
+        // Game over screen at <= 30 min
+        if (this.remaining > 0 && this.remaining <= 1800 && !this._gameOverShown) {
+            this._gameOverShown = true;
+            this.showGameOver();
+        }
     }
 
     getFormatted() {
         const h = Math.floor(this.remaining / 3600);
         const m = Math.floor((this.remaining % 3600) / 60);
         return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    }
+
+    showGameOver() {
+        this.stop();
+        const overlay = document.getElementById('screen-gameover');
+        if (!overlay) return;
+
+        // ASCII skull made of 0 and 1
+        const skull = [
+            '         0001111111000         ',
+            '       011111111111111100      ',
+            '      01111111111111111110     ',
+            '     0111111111111111111110    ',
+            '    011111111111111111111110   ',
+            '   01111111111111111111111110  ',
+            '   01111111111111111111111110  ',
+            '   01110001111111111100011110  ',
+            '   01100000111111110000001110  ',
+            '   01100000011111100000001110  ',
+            '   01110000011111100000011110  ',
+            '   01111000111111111000111110  ',
+            '   01111111111001111111111110  ',
+            '    0111111110000011111111100  ',
+            '     011111100000001111111100  ',
+            '      0111110010010011111100   ',
+            '       01111100000001111100    ',
+            '        011110000000111100     ',
+            '         0101010101010100      ',
+            '          010101010101         ',
+            '           01010101            ',
+        ].join('\n');
+
+        const skullEl = document.getElementById('skull-ascii');
+        if (skullEl) skullEl.textContent = skull;
+
+        // Matrix rain
+        const rainContainer = document.getElementById('gameover-rain');
+        if (rainContainer) {
+            rainContainer.innerHTML = '';
+            for (let i = 0; i < 40; i++) {
+                const col = document.createElement('div');
+                col.className = 'rain-column';
+                col.style.left = (i * 2.5) + '%';
+                col.style.animationDuration = (1.5 + Math.random() * 3) + 's';
+                col.style.animationDelay = (Math.random() * 2) + 's';
+                let chars = '';
+                for (let j = 0; j < 30; j++) {
+                    chars += Math.random() > 0.5 ? '1' : '0';
+                    chars += '\n';
+                }
+                col.textContent = chars;
+                rainContainer.appendChild(col);
+            }
+        }
+
+        overlay.classList.remove('hidden');
+
+        // Restart button
+        const btn = document.getElementById('btn-restart');
+        if (btn) {
+            btn.addEventListener('click', () => {
+                localStorage.removeItem('reactor7_save');
+                // Store a 3h countdown target for the new session
+                const newTarget = Date.now() + 3 * 3600 * 1000;
+                localStorage.setItem('reactor7_restart', newTarget.toString());
+                location.reload();
+            });
+        }
     }
 }
 
