@@ -987,6 +987,39 @@ code {
     margin-top: 20px;
 }
 
+.comment-section {
+    margin-top: 15px;
+}
+
+.comment-section label {
+    display: block;
+    font-family: 'Share Tech Mono', monospace;
+    color: #00ff41;
+    margin-bottom: 8px;
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.comment-section textarea {
+    width: 100%;
+    background: rgba(0, 255, 65, 0.05);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    color: #b0ffb0;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.95em;
+    padding: 12px;
+    resize: vertical;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.comment-section textarea:focus {
+    outline: none;
+    border-color: #00ff41;
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+}
+
 .report-form label {
     display: block;
     font-size: 11px;

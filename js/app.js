@@ -745,6 +745,12 @@ function setupReport() {
 }
 
 function submitReport() {
+    const reportText = document.getElementById('report-textarea').value;
+    const commentText = (document.getElementById('report-comment') || {}).value || '';
+
+    // Generate .md file and download
+    downloadReportMD(reportText, commentText);
+
     const complete = document.getElementById('mission-complete');
     complete.classList.remove('hidden');
     complete.style.animation = 'fadeIn 1s ease';
@@ -761,6 +767,40 @@ function submitReport() {
     setTimeout(() => {
         complete.scrollIntoView({ behavior: 'smooth' });
     }, 300);
+}
+
+function downloadReportMD(reportText, commentText) {
+    const now = new Date();
+    const date = now.toLocaleDateString('fr-CA');
+    const time = now.toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' });
+
+    let md = `# RAPPORT D'INCIDENT — OPÉRATION RÉACTEUR-7\n`;
+    md += `## Centrale Nucléaire Gentilly-3\n\n`;
+    md += `- **Agent :** ${state.agentName}\n`;
+    md += `- **Date de soumission :** ${date} à ${time}\n`;
+    md += `- **Classification :** SECRET\n\n`;
+    md += `---\n\n`;
+    md += `## Rapport d'incident\n\n`;
+    md += reportText + '\n\n';
+    md += `---\n\n`;
+
+    if (commentText.trim()) {
+        md += `## Commentaire pour l'exercice et le prof\n\n`;
+        md += commentText + '\n\n';
+        md += `---\n\n`;
+    }
+
+    md += `> Généré automatiquement par le système RÉACTEUR-7\n`;
+
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `rapport_${state.agentName.replace(/\s+/g, '_')}_${date}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
 
