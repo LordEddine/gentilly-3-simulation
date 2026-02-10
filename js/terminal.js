@@ -509,7 +509,9 @@ class SimulatedTerminal {
             if (a === '-v') invert = true;
             else if (a === '-c') count = true;
             else if (a === '-i') ignoreCase = true;
-            else if (a === '-o' || a === '-oE' || a === '-E' || a === '-oP') { onlyMatch = true; regexMode = true; }
+            else if (a === '-oE' || a === '-oP') { onlyMatch = true; regexMode = true; }
+            else if (a === '-E' || a === '-P') { regexMode = true; }
+            else if (a === '-o') { onlyMatch = true; }
             else if (a === '-iv' || a === '-vi') { invert = true; ignoreCase = true; }
             else if (a === '-vc' || a === '-cv') { invert = true; count = true; }
             else if (a === '-ic' || a === '-ci') { ignoreCase = true; count = true; }
