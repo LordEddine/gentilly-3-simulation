@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPÉRATION RÉACTEUR-7 — Gentilly-3</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+
+
+    <!-- ============================================ -->
+    <!-- SCANLINE + CRT OVERLAY                       -->
+    <!-- ============================================ -->
+    <div class="crt-overlay"></div>
+    <div class="scanline"></div>
+
+    <!-- ============================================ -->
+    <!-- BOOT SCREEN                                  -->
+    <!-- ============================================ -->
+    <div id="screen-boot" class="screen active">
+        <div class="boot-container">
+            <pre class="boot-ascii" id="boot-ascii"></pre>
+            <div class="boot-text" id="boot-text"></div>
+            <div class="boot-progress">
+                <div class="boot-progress-bar" id="boot-progress-bar"></div>
+            </div>
+            <div class="boot-status" id="boot-status">INITIALISATION DES SYSTÈMES...</div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- LOGIN SCREEN                                 -->
+    <!-- ============================================ -->
+    <div id="screen-login" class="screen">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="facility-logo">☢</div>
+                <h1>GENTILLY-3</h1>
+                <p class="subtitle">SYSTÈME DE SÉCURITÉ NUCLÉAIRE</p>
+                <p class="classified">▓▓ ACCÈS CLASSIFIÉ — NIVEAU RESTREINT ▓▓</p>
+            </div>
+            <div class="login-box">
+                <div class="login-field">
+                    <label>NOM DE CODE AGENT :</label>
+                    <input type="text" id="agent-name" placeholder="Entrez votre nom de code..." autocomplete="off" spellcheck="false">
+                </div>
+                <button id="btn-login" class="btn-terminal" disabled>
+                    <span class="btn-text">[ ACCÈS REFUSÉ ]</span>
+                </button>
+                <p class="login-hint" id="login-hint"></p>
+            </div>
+            <div class="login-footer">
+                <p>OPÉRATION RÉACTEUR-7 // CLASSIFIÉ // NE PAS DISTRIBUER</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MAIN INTERFACE                               -->
+    <!-- ============================================ -->
+    <div id="screen-main" class="screen">
+
+        <!-- TOP BAR -->
+        <header class="top-bar">
+            <div class="top-left">
+                <span class="facility-badge">☢ GENTILLY-3</span>
+                <span class="separator">|</span>
+                <span class="operation-name">OPÉRATION RÉACTEUR-7</span>
+            </div>
+            <div class="top-center">
+                <div class="timer-display">
+                    <span class="timer-label">SURCHARGE RÉACTEUR DANS</span>
+                    <span class="timer-value" id="main-timer">03:00:00</span>
+                </div>
+            </div>
+            <div class="top-right">
+                <span class="agent-badge" id="agent-badge">AGENT: ---</span>
+                <span class="clearance" id="clearance-badge">NIVEAU 0</span>
+                <button class="btn-sound" id="btn-sound" title="Activer/Couper le son">🔇</button>
+            </div>
+
+            <!-- AUDIO AMBIANCE -->
+            <audio id="ambiance-audio" loop preload="auto">
+                <source src="assets/ambiance.mp3" type="audio/mpeg">
+            </audio>
+        </header>
+
+        <!-- CONTENT AREA -->
+        <div class="main-content">
+
+            <!-- SIDEBAR -->
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h3>📡 MISSIONS</h3>
+                    <nav class="mission-nav">
+                        <button class="nav-btn active" data-level="briefing" id="nav-briefing">
+                            <span class="nav-icon">📋</span>
+                            <span class="nav-label">BRIEFING</span>
+                            <span class="nav-status status-available">●</span>
+                        </button>
+                        <button class="nav-btn locked" data-level="level1" id="nav-level1">
+                            <span class="nav-icon">🔍</span>
+                            <span class="nav-label">NIV.1 — LOGS</span>
+                            <span class="nav-status status-locked">🔒</span>
+                        </button>
+                        <button class="nav-btn locked" data-level="level2" id="nav-level2">
+                            <span class="nav-icon">🌐</span>
+                            <span class="nav-label">NIV.2 — RÉSEAU</span>
+                            <span class="nav-status status-locked">🔒</span>
+                        </button>
+                        <button class="nav-btn locked" data-level="level3" id="nav-level3">
+                            <span class="nav-icon">🛡️</span>
+                            <span class="nav-label">NIV.3 — DÉFENSE</span>
+                            <span class="nav-status status-locked">🔒</span>
+                        </button>
+                        <button class="nav-btn locked" data-level="level4" id="nav-level4">
+                            <span class="nav-icon">📝</span>
+                            <span class="nav-label">NIV.4 — RAPPORT</span>
+                            <span class="nav-status status-locked">🔒</span>
+                        </button>
+                    </nav>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>📁 FICHIERS LOGS</h3>
+                    <div class="file-explorer">
+                        <div class="folder-item" id="folder-logs">
+                            <span class="folder-toggle">▼</span>
+                            <span class="folder-name">logs_centrale/</span>
+                        </div>
+                        <div class="file-list" id="file-list-logs">
+                            <div class="file-item" data-file="logs_centrale/access.log">
+                                <span class="file-icon">📄</span>
+                                <span class="file-name">access.log</span>
+                            </div>
+                            <div class="file-item" data-file="logs_centrale/capteurs.log">
+                                <span class="file-icon">📄</span>
+                                <span class="file-name">capteurs.log</span>
+                            </div>
+                            <div class="file-item" data-file="logs_centrale/auth.log">
+                                <span class="file-icon">📄</span>
+                                <span class="file-name">auth.log</span>
+                            </div>
+                            <div class="file-item" data-file="logs_centrale/connexions_actives.txt">
+                                <span class="file-icon">📄</span>
+                                <span class="file-name">connexions_actives.txt</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>🔑 CODE D'ACCÈS</h3>
+                    <div class="unlock-box">
+                        <input type="text" id="unlock-code" placeholder="Entrez le code..." autocomplete="off" spellcheck="false">
+                        <button id="btn-unlock" class="btn-terminal-sm">DÉVERROUILLER</button>
+                    </div>
+                    <p class="unlock-hint" id="unlock-hint"></p>
+                </div>
+
+                <div class="sidebar-section radio-section">
+                    <h3>📻 RADIO COMMS</h3>
+                    <div class="radio-feed" id="radio-feed">
+                        <div class="radio-msg">
+                            <span class="radio-time">02:47</span>
+                            <span class="radio-text">Système en ligne. En attente du briefing...</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- MAIN PANEL -->
+            <main class="main-panel" id="main-panel">
+
+                <!-- BRIEFING -->
+                <section class="level-content" id="content-briefing">
+                    <div class="content-header">
+                        <h2>📋 BRIEFING — CONTEXTE DE L'INCIDENT</h2>
+                        <div class="classification">SECRET DÉFENSE — DIFFUSION RESTREINTE</div>
+                    </div>
+                    <div class="terminal-box">
+                        <div class="terminal-header">
+                            <span class="terminal-dot red"></span>
+                            <span class="terminal-dot yellow"></span>
+                            <span class="terminal-dot green"></span>
+                            <span class="terminal-title">transmission_entrante.log</span>
+                        </div>
+                        <div class="terminal-body" id="briefing-text">
+                            <!-- Filled by typewriter -->
+                        </div>
+                    </div>
+                    <div class="info-cards" id="briefing-cards" style="display:none;">
+                        <div class="info-card">
+                            <div class="card-icon">📅</div>
+                            <div class="card-title">DATE</div>
+                            <div class="card-value">14 mars 2026, 02h47</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="card-icon">📍</div>
+                            <div class="card-title">LIEU</div>
+                            <div class="card-value">Centrale Gentilly-3</div>
+                        </div>
+                        <div class="info-card alert">
+                            <div class="card-icon">⚠️</div>
+                            <div class="card-title">MENACE</div>
+                            <div class="card-value">Cyberattaque en cours</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="card-icon">🎯</div>
+                            <div class="card-title">CIBLE</div>
+                            <div class="card-value">Réacteur 7 — Capteurs</div>
+                        </div>
+                    </div>
+                    <div class="mission-brief" id="briefing-mission" style="display:none;">
+                        <h3>🎯 VOTRE MISSION</h3>
+                        <p>Analyser, identifier et neutraliser la menace avant qu'elle ne compromette les systèmes critiques de la centrale.</p>
+                        <p class="warning-text">⚠️ Entrez le code d'accès ci-dessous pour débuter le Niveau 1.</p>
+                    </div>
+                    <div class="code-reveal hidden" id="code-reveal-briefing">
+                        <div class="code-reveal-box">
+                            <div class="code-reveal-label">🔑 CODE D'ACCÈS — NIVEAU 1</div>
+                            <div class="code-reveal-value">ALPHA</div>
+                            <div class="code-reveal-hint">Entrez ce code dans la section « Code d'accès » de la barre latérale</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- LEVEL 1 -->
+                <section class="level-content hidden" id="content-level1">
+                    <div class="content-header">
+                        <h2>🔍 NIVEAU 1 — ANALYSE DES LOGS</h2>
+                        <div class="classification">DURÉE ESTIMÉE : 40 MINUTES</div>
+                    </div>
+                    <div class="comm-message">
+                        <div class="comm-sender">📨 MSG DE : Équipe de nuit</div>
+                        <div class="comm-body">
+                            <p>« On a remarqué des trucs bizarres dans les logs. Les capteurs du réacteur 7 donnent des valeurs folles et on voit du trafic qu'on ne reconnaît pas. On vous envoie les fichiers de logs. Trouvez ce qui se passe. »</p>
+                        </div>
+                    </div>
+
+                    <div class="objectives-panel" id="objectives-level1">
+                        <div class="objectives-header">
+                            <h3>🎯 OBJECTIFS À VALIDER</h3>
+                            <div class="objectives-progress">
+                                <div class="progress-bar"><div class="progress-fill" id="progress-level1"></div></div>
+                                <span class="progress-text" id="progress-text-level1">0 / 6</span>
+                            </div>
+                        </div>
+                        <p class="objectives-desc">Utilisez le terminal en bas de page pour exécuter vos commandes. Chaque objectif se valide automatiquement quand la bonne réponse apparaît dans la sortie.</p>
+                        <div class="objectives-list">
+                            <div class="obj-item" data-obj="l1-ip"><span class="obj-check">○</span><span class="obj-text">Identifier l'adresse IP source externe suspecte</span></div>
+                            <div class="obj-item" data-obj="l1-count"><span class="obj-check">○</span><span class="obj-text">Compter les connexions de l'IP suspecte dans access.log</span></div>
+                            <div class="obj-item" data-obj="l1-ports"><span class="obj-check">○</span><span class="obj-text">Trouver les 3 ports non-standards utilisés par l'attaquant</span></div>
+                            <div class="obj-item" data-obj="l1-sensors"><span class="obj-check">○</span><span class="obj-text">Détecter les anomalies dans les capteurs du réacteur</span></div>
+                            <div class="obj-item" data-obj="l1-auth"><span class="obj-check">○</span><span class="obj-text">Trouver le compte compromis par l'attaquant</span></div>
+                            <div class="obj-item" data-obj="l1-cmds"><span class="obj-check">○</span><span class="obj-text">Découvrir les commandes exécutées après intrusion</span></div>
+                        </div>
+                        <div class="level-complete-banner hidden" id="banner-level1">
+                            🎉 NIVEAU 1 COMPLÉTÉ — ACCÈS AU NIVEAU 2 DÉVERROUILLÉ
+                            <div class="code-reveal-inline">🔑 Code Niveau 2 : <span class="code-value">BRAVO</span></div>
+                        </div>
+                    </div>
+
+                    <div class="mission-block">
+                        <h3>🔹 Mission 1.1 — Trouver l'intrus (grep)</h3>
+                        <div class="context-box">
+                            <strong>Contexte :</strong> Le réseau interne de la centrale utilise la plage <code>192.168.1.0/24</code>. Toute adresse <strong>source</strong> (<code>SRC=</code>) en dehors de cette plage est potentiellement suspecte.
+                        </div>
+                        <div class="question-box">
+                            <p>❓ <strong>Question :</strong> Quelle adresse IP source externe apparaît dans les logs d'accès ?</p>
+                            <div class="hint-container">
+                                <button class="btn-hint" onclick="toggleHint(this)">💡 Indice</button>
+                                <div class="hint-content hidden">
+                                    <code>grep -v "SRC=192.168.1" logs_centrale/access.log</code>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="question-box">
+                            <p>❓ <strong>Bonus :</strong> Combien de fois cette IP apparaît-elle ?</p>
+                            <div class="hint-container">
+                                <button class="btn-hint" onclick="toggleHint(this)">💡 Indice</button>
+                                <div class="hint-content hidden">
+                                    <code>grep -c "IP_SUSPECTE" logs_centrale/access.log</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mission-block">
+                        <h3>🔹 Mission 1.2 — Identifier les ports suspects (awk)</h3>
+                        <div class="context-box">
+                            <strong>Contexte :</strong> Les ports standards de la centrale sont : <code>22</code> (SSH), <code>80</code> (HTTP), <code>443</code> (HTTPS), <code>3306</code> (MySQL), <code>8080</code> (Tomcat). Tout autre port est suspect.
+                        </div>
+                        <div class="question-box">
+                            <p>❓ <strong>Question :</strong> Quels ports non-standards sont utilisés par l'attaquant ?</p>
+                            <div class="hint-container">
+                                <button class="btn-hint" onclick="toggleHint(this)">💡 Indice</button>
+                                <div class="hint-content hidden">
+                                    <code>grep "IP_SUSPECTE" logs_centrale/access.log | awk '{print $4}' | sed 's/PORT=//' | sort -u</code>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="question-box">
+                            <p>❓ <strong>Bonus :</strong> Que représentent ces ports dans le monde du hacking ?</p>
+                        </div>
+                    </div>
+
+                    <div class="mission-block">
+                        <h3>🔹 Mission 1.3 — Analyser les capteurs (awk + sed)</h3>
+                        <div class="context-box">
+                            <strong>Contexte :</strong> La température normale du réacteur est entre <strong>290°C et 320°C</strong>. La pression normale est entre <strong>150 et 160 bar</strong>.
+                        </div>
+                        <div class="question-box">
+                            <p>❓ <strong>Question :</strong> Trouvez toutes les entrées où les capteurs montrent des valeurs anormales.</p>
+                            <div class="hint-container">
+                                <button class="btn-hint" onclick="toggleHint(this)">💡 Indice</button>
+                                <div class="hint-content hidden">
+                                    <code>grep -v "NORMAL" logs_centrale/capteurs.log</code>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="question-box">
+                            <p>❓ <strong>Question :</strong> Extraire uniquement les valeurs de température et leur statut.</p>
+                            <div class="hint-container">
+                                <button class="btn-hint" onclick="toggleHint(this)">💡 Indice</button>
+                                <div class="hint-content hidden">
+                                    <code>grep "TEMP_REACT_7" logs_centrale/capteurs.log | awk '{print $3, $5}'</code>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="question-box">
+                            <p>❓ <strong>Question critique :</strong> Les valeurs sont-elles vraiment anormales ou l'attaquant les falsifie-t-il ? Justifiez en comparant les horodatages.</p>
+                        </div>
+                    </div>
+
+                    <div class="mission-block">
+                        <h3>🔹 Mission 1.4 — Analyser les tentatives d'authentification</h3>
+                        <div class="question-box">
+                            <p>❓ <strong>Question :</strong> L'attaquant a-t-il réussi à s'authentifier ? Avec quel compte ?</p>
+                            <div class="hint-container">
+                                <button class="btn-hint" onclick="toggleHint(this)">💡 Indice</button>
+                                <div class="hint-content hidden">
+                                    <code>grep "IP_SUSPECTE" logs_centrale/auth.log | grep "SUCCESS"</code>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="question-box">
+                            <p>❓ <strong>Question :</strong> Quelles commandes l'attaquant a-t-il exécutées après sa connexion ?</p>
+                            <div class="hint-container">
+                                <button class="btn-hint" onclick="toggleHint(this)">💡 Indice</button>
+                                <div class="hint-content hidden">
+                                    <code>grep "IP_SUSPECTE" logs_centrale/auth.log | grep "SUDO" | sed 's/.*CMD="//' | sed 's/"//'</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TERMINAL SIMULÉ NIVEAU 1 -->
+                    <div class="terminal-section">
+                        <h3>💻 Terminal d'analyse</h3>
+                        <p class="terminal-desc">Utilisez ce terminal pour tester vos commandes directement sur les fichiers de logs.</p>
+                        <div class="sim-terminal" id="term-level1" data-level="level1">
+                            <div class="sim-header">
+                                <span class="sim-dot red"></span>
+                                <span class="sim-dot yellow"></span>
+                                <span class="sim-dot green"></span>
+                                <span class="sim-title">agent@gentilly3:~/logs_centrale$</span>
+                            </div>
+                            <div class="sim-output"></div>
+                            <div class="sim-input-line">
+                                <span class="sim-prompt">$</span>
+                                <input type="text" class="sim-input" placeholder="Tapez une commande..." spellcheck="false" autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- LEVEL 2 -->
+                <section class="level-content hidden" id="content-level2">
+                    <div class="content-header">
+                        <h2>🌐 NIVEAU 2 — SURVEILLANCE RÉSEAU</h2>
+                        <div class="classification">DURÉE ESTIMÉE : 40 MINUTES</div>
+                    </div>
+                    <div class="comm-message">
+                        <div class="comm-sender">📨 MSG DE : Commandant Lavoie</div>
+                        <div class="comm-body">
+                            <p>« Bon travail sur l'analyse des logs. Maintenant, on a besoin que vous examiniez les connexions actives et que vous compreniez comment l'attaquant communique avec notre réseau. Chen dit que certaines machines répondent bizarrement. »</p>
+                        </div>
+                    </div>
+
+                    <div class="objectives-panel" id="objectives-level2">
+                        <div class="objectives-header">
+                            <h3>🎯 OBJECTIFS À VALIDER</h3>
+                            <div class="objectives-progress">
+                                <div class="progress-bar"><div class="progress-fill" id="progress-level2"></div></div>
+                                <span class="progress-text" id="progress-text-level2">0 / 3</span>
+                            </div>
+                        </div>
+                        <p class="objectives-desc">Analysez les connexions réseau dans le terminal. Les objectifs se valident automatiquement.</p>
+                        <div class="objectives-list">
+                            <div class="obj-item" data-obj="l2-connections"><span class="obj-check">○</span><span class="obj-text">Identifier les connexions suspectes dans connexions_actives.txt</span></div>
+                            <div class="obj-item" data-obj="l2-programs"><span class="obj-check">○</span><span class="obj-text">Extraire les programmes utilisés par l'attaquant (nc, python3)</span></div>
+                            <div class="obj-item" data-obj="l2-timeline"><span class="obj-check">○</span><span class="obj-text">Reconstituer la timeline triée de l'attaque</span></div>
+                        </div>
+                        <div class="level-complete-banner hidden" id="banner-level2">
+                            🎉 NIVEAU 2 COMPLÉTÉ — ACCÈS AU NIVEAU 3 DÉVERROUILLÉ
+                            <div class="code-reveal-inline">🔑 Code Niveau 3 : <span class="code-value">CHARLIE</span></div>
+                        </div>
+                    </div>
+
+                    <div class="mission-block">
+                        <h3>🔹 Mission 2.1 — Analyser les connexions actives (awk)</h3>
+                        <div class="question-box">
+                            <p>❓ <strong>Question :</strong> À partir du fichier <code>connexions_actives.txt</code>, identifiez toutes les connexions suspectes.</p>
+                            <div class="hint-container">
+                                <button class="btn-hint" onclick="toggleHint(this)">💡 Indice</button>
+                                <div class="hint-content hidden">
+                                    <code>grep "10.0.0.55" logs_centrale/connexions_actives.txt</code>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="question-box">
+                            <p>❓ <strong>Question :</strong> Extraire les ports et programmes suspects.</p>
+                            <div class="hint-container">
+                                <button class="btn-hint" onclick="toggleHint(this)">💡 Indice</button>
+                                <div class="hint-content hidden">
+                                    <code>grep "10.0.0.55" logs_centrale/connexions_actives.txt | awk '{print $3, $4, $6}'</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mission-block">
+                        <h3>🔹 Mission 2.2 — Comprendre netcat</h3>
+                        <div class="context-box">
+                            <strong>Contexte :</strong> Votre commandant va faire une démonstration en direct. Observez attentivement.
+                        </div>
+                        <div class="question-box">
+                            <p>❓ <strong>Exercice :</strong> Expliquez dans vos propres mots ce que font les commandes suivantes :</p>
+                            <div class="code-display">
+                                <code>nc -l -p 4444</code><br>
+                                <code>echo "Données confidentielles" | nc localhost 4444</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mission-block">
+                        <h3>🔹 Mission 2.3 — Identifier les adresses IP et réseaux</h3>
+                        <div class="question-box">
+                            <p>❓ <strong>Exercice :</strong> Remplissez le tableau suivant en vous basant sur les logs :</p>
+                            <table class="data-table">
+                                <thead>
+                                    <tr><th>Adresse IP</th><th>Réseau</th><th>Rôle probable</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>192.168.1.10</td><td>?</td><td>?</td></tr>
+                                    <tr><td>192.168.1.12</td><td>?</td><td>?</td></tr>
+                                    <tr><td>192.168.1.15</td><td>?</td><td>?</td></tr>
+                                    <tr><td>192.168.1.20</td><td>?</td><td>?</td></tr>
+                                    <tr><td>192.168.1.100</td><td>?</td><td>?</td></tr>
+                                    <tr><td>192.168.1.200</td><td>?</td><td>?</td></tr>
+                                    <tr><td>10.0.0.55</td><td>?</td><td>?</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="mission-block">
+                        <h3>🔹 Mission 2.4 — Timeline de l'attaque</h3>
+                        <div class="question-box">
+                            <p>❓ <strong>Exercice :</strong> En utilisant TOUS les fichiers de logs, reconstituez la chronologie complète de l'attaque.</p>
+                            <div class="hint-container">
+                                <button class="btn-hint" onclick="toggleHint(this)">💡 Indice</button>
+                                <div class="hint-content hidden">
+                                    <code>grep "10.0.0.55" logs_centrale/access.log logs_centrale/auth.log | sort -t']' -k1</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TERMINAL SIMULÉ NIVEAU 2 -->
+                    <div class="terminal-section">
+                        <h3>💻 Terminal de surveillance</h3>
+                        <p class="terminal-desc">Analysez les connexions actives et le trafic réseau.</p>
+                        <div class="sim-terminal" id="term-level2" data-level="level2">
+                            <div class="sim-header">
+                                <span class="sim-dot red"></span>
+                                <span class="sim-dot yellow"></span>
+                                <span class="sim-dot green"></span>
+                                <span class="sim-title">agent@gentilly3:~/logs_centrale$</span>
+                            </div>
+                            <div class="sim-output"></div>
+                            <div class="sim-input-line">
+                                <span class="sim-prompt">$</span>
+                                <input type="text" class="sim-input" placeholder="Tapez une commande..." spellcheck="false" autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- LEVEL 3 -->
+                <section class="level-content hidden" id="content-level3">
+                    <div class="content-header">
+                        <h2>🛡️ NIVEAU 3 — SCRIPTS DE DÉFENSE</h2>
+                        <div class="classification">DURÉE ESTIMÉE : 45 MINUTES</div>
+                    </div>
+                    <div class="comm-message urgent">
+                        <div class="comm-sender">🚨 MSG URGENT DE : Commandant Lavoie</div>
+                        <div class="comm-body">
+                            <p>« L'attaque est confirmée ! On a besoin de scripts pour bloquer l'attaquant et surveiller le système. Écrivez-nous des outils qu'on pourra réutiliser. Le temps presse ! »</p>
+                        </div>
+                    </div>
+
+                    <div class="objectives-panel" id="objectives-level3">
+                        <div class="objectives-header">
+                            <h3>🎯 OBJECTIFS À VALIDER</h3>
+                            <div class="objectives-progress">
+                                <div class="progress-bar"><div class="progress-fill" id="progress-level3"></div></div>
+                                <span class="progress-text" id="progress-text-level3">0 / 3</span>
+                            </div>
+                        </div>
+                        <p class="objectives-desc">Avant d'écrire vos scripts, prouvez votre maîtrise des commandes dans le terminal. Validez les objectifs puis rédigez vos scripts.</p>
+                        <div class="objectives-list">
+                            <div class="obj-item" data-obj="l3-extract"><span class="obj-check">○</span><span class="obj-text">Extraire les IPs suspectes avec leur nombre d'occurrences</span></div>
+                            <div class="obj-item" data-obj="l3-ports"><span class="obj-check">○</span><span class="obj-text">Lister les ports avec SERVICE=UNKNOWN</span></div>
+                            <div class="obj-item" data-obj="l3-temps"><span class="obj-check">○</span><span class="obj-text">Filtrer les températures supérieures à 320°C</span></div>
+                        </div>
+                        <div class="level-complete-banner hidden" id="banner-level3">
+                            🎉 NIVEAU 3 COMPLÉTÉ — ACCÈS AU NIVEAU 4 DÉVERROUILLÉ
+                            <div class="code-reveal-inline">🔑 Code Niveau 4 : <span class="code-value">DELTA</span></div>
+                        </div>
+                    </div>
+
+                    <div class="mission-block">
+                        <h3>🔹 Mission 3.1 — Script de détection d'IP suspecte</h3>
+                        <div class="context-box">
+                            <strong>Consigne :</strong> Écrire un script bash <code>detecteur.sh</code> qui prend un fichier de log en paramètre et affiche toutes les adresses IP qui ne font PAS partie du réseau <code>192.168.1</code>.
+                        </div>
+                        <div class="requirements-box">
+                            <p><strong>Le script doit :</strong></p>
+                            <ul>
+                                <li>Vérifier qu'un paramètre est donné</li>
+                                <li>Extraire toutes les IP du fichier</li>
+                                <li>Filtrer celles qui ne sont pas en 192.168.1.x</li>
+                                <li>Afficher le nombre de connexions par IP suspecte</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="mission-block">
+                        <h3>🔹 Mission 3.2 — Script de blocage de ports</h3>
+                        <div class="context-box">
+                            <strong>Consigne :</strong> Écrire un script bash <code>bloquer_ports.sh</code> qui lit <code>access.log</code>, trouve les ports avec <code>SERVICE=UNKNOWN</code>, et génère les règles <code>iptables</code> correspondantes.
+                        </div>
+                        <div class="requirements-box">
+                            <p><strong>Le script doit :</strong></p>
+                            <ul>
+                                <li>Identifier automatiquement les ports suspects</li>
+                                <li>Générer des règles iptables INPUT et OUTPUT pour chaque port</li>
+                                <li>Bloquer aussi l'IP de l'attaquant</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="mission-block">
+                        <h3>🔹 Mission 3.3 — Script Python d'alerte</h3>
+                        <div class="context-box">
+                            <strong>Consigne :</strong> Écrire un script Python <code>alerte.py</code> qui lit <code>capteurs.log</code> et affiche une alerte pour chaque température supérieure à <strong>320°C</strong>.
+                        </div>
+                        <div class="requirements-box">
+                            <p><strong>Le script doit :</strong></p>
+                            <ul>
+                                <li>Ouvrir et lire le fichier de capteurs</li>
+                                <li>Filtrer les lignes avec TEMP_REACT_7</li>
+                                <li>Extraire la valeur et la comparer au seuil</li>
+                                <li>Classer l'alerte (ALERTE / CRITIQUE / DANGER)</li>
+                                <li>Afficher un résumé avec le total des alertes</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="mission-block">
+                        <h3>🔹 Mission 3.4 — Script de surveillance continue</h3>
+                        <div class="context-box">
+                            <strong>Consigne :</strong> Écrire un script <code>moniteur.sh</code> qui surveille un fichier de log en temps réel et alerte quand l'IP <code>10.0.0.55</code> apparaît.
+                        </div>
+                        <div class="requirements-box">
+                            <p><strong>Le script doit :</strong></p>
+                            <ul>
+                                <li>Utiliser <code>tail -f</code> pour la surveillance en temps réel</li>
+                                <li>Filtrer les lignes contenant l'IP dangereuse</li>
+                                <li>Afficher une alerte avec l'heure de détection</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- TERMINAL SIMULÉ NIVEAU 3 -->
+                    <div class="terminal-section">
+                        <h3>💻 Terminal de développement</h3>
+                        <p class="terminal-desc">Testez vos commandes avant d'écrire vos scripts. Les fichiers de logs sont accessibles.</p>
+                        <div class="sim-terminal" id="term-level3" data-level="level3">
+                            <div class="sim-header">
+                                <span class="sim-dot red"></span>
+                                <span class="sim-dot yellow"></span>
+                                <span class="sim-dot green"></span>
+                                <span class="sim-title">agent@gentilly3:~/logs_centrale$</span>
+                            </div>
+                            <div class="sim-output"></div>
+                            <div class="sim-input-line">
+                                <span class="sim-prompt">$</span>
+                                <input type="text" class="sim-input" placeholder="Tapez une commande..." spellcheck="false" autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- LEVEL 4 -->
+                <section class="level-content hidden" id="content-level4">
+                    <div class="content-header">
+                        <h2>📝 NIVEAU 4 — RAPPORT FINAL</h2>
+                        <div class="classification">DURÉE ESTIMÉE : 20 MINUTES</div>
+                    </div>
+                    <div class="comm-message success">
+                        <div class="comm-sender">📨 MSG DE : Commandant Lavoie</div>
+                        <div class="comm-body">
+                            <p>« La menace est sous contrôle grâce à votre travail. Il nous faut maintenant un rapport officiel d'incident. Le gouvernement l'attend. Soyez précis et complets. »</p>
+                        </div>
+                    </div>
+
+                    <div class="mission-block">
+                        <h3>🔹 Mission Finale — Rapport d'incident</h3>
+                        <div class="context-box">
+                            <strong>Consigne :</strong> Rédigez un rapport d'incident (5 à 10 lignes) qui résume :
+                        </div>
+                        <div class="report-checklist">
+                            <div class="checklist-item"><span class="check">1</span> <strong>QUI</strong> a attaqué ? (adresse IP, méthode)</div>
+                            <div class="checklist-item"><span class="check">2</span> <strong>COMMENT</strong> l'attaquant est entré ? (vecteur d'attaque)</div>
+                            <div class="checklist-item"><span class="check">3</span> <strong>QUOI</strong> : qu'a fait l'attaquant une fois à l'intérieur ?</div>
+                            <div class="checklist-item"><span class="check">4</span> <strong>IMPACT</strong> : quelles conséquences pour la centrale ?</div>
+                            <div class="checklist-item"><span class="check">5</span> <strong>SOLUTION</strong> : quelles mesures prendre ?</div>
+                        </div>
+                        <div class="report-form">
+                            <label>RAPPORT D'INCIDENT — CLASSIFICATION : SECRET</label>
+                            <textarea id="report-textarea" placeholder="Agent [VOTRE NOM DE CODE], rapport d'incident Gentilly-3...&#10;&#10;L'attaque a été menée depuis..." rows="12"></textarea>
+                            <div class="report-footer">
+                                <span id="report-chars">0 caractères</span>
+                                <button class="btn-terminal" id="btn-submit-report">[ SOUMETTRE LE RAPPORT ]</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mission-complete hidden" id="mission-complete">
+                        <div class="complete-box">
+                            <h2>✅ MISSION ACCOMPLIE</h2>
+                            <p>Agent <span class="agent-name-display"></span>, votre rapport a été transmis au commandement.</p>
+                            <p>La centrale Gentilly-3 est sécurisée grâce à votre intervention.</p>
+                            <div class="complete-ascii">
+<pre>
+    ╔═══════════════════════════════════════╗
+    ║                                       ║
+    ║    OPÉRATION RÉACTEUR-7               ║
+    ║    STATUS : ■■■■■■■■■■ TERMINÉE      ║
+    ║                                       ║
+    ║    MENACE NEUTRALISÉE                 ║
+    ║    SYSTÈMES RESTAURÉS                 ║
+    ║    RAPPORT TRANSMIS                   ║
+    ║                                       ║
+    ╚═══════════════════════════════════════╝
+</pre>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+
+        <!-- TOAST NOTIFICATIONS -->
+        <div class="toast-container" id="toast-container"></div>
+
+    </div>
+
+    <!-- FILE VIEWER OVERLAY -->
+    <div id="file-viewer-overlay" class="file-viewer-overlay hidden">
+        <div class="file-viewer">
+            <div class="file-viewer-header">
+                <div class="file-viewer-dots">
+                    <span class="sim-dot red"></span>
+                    <span class="sim-dot yellow"></span>
+                    <span class="sim-dot green"></span>
+                </div>
+                <span class="file-viewer-title" id="file-viewer-title">fichier.log</span>
+                <button class="file-viewer-close" id="file-viewer-close">✕</button>
+            </div>
+            <pre class="file-viewer-content" id="file-viewer-content"></pre>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="js/typewriter.js"></script>
+    <script src="js/timer.js"></script>
+    <script src="js/terminal.js"></script>
+    <script src="js/app.js"></script>
+
+</body>
+</html>
